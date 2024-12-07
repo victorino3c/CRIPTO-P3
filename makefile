@@ -1,32 +1,45 @@
 # Variables
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c11
-LDFLAGS = -lgmp -ljpeg -lm
-UTILS_DIR = utiles
-PRIMOS_DIR = primos
-TARGET = primo
-UTILS_OBJ = $(UTILS_DIR)/utils.o
-PRIMO_OBJ = $(PRIMOS_DIR)/primo.o
+CFLAGS = -Wall -Wextra -std=c99 -pedantic
+LDFLAGS = -lgmp -lm
+U = utiles/
+O = obj/
+PR = primos/
+PO = potenciacion/
 
-# Regla por defecto
-all: $(TARGET)
+# Rules
+all: $(PR)primo $(PO)potenciacion
 
-# Regla para compilar el ejecutable
-$(TARGET): $(UTILS_OBJ) $(PRIMO_OBJ)
-	$(CC) $(CFLAGS) -o $(TARGET) $(UTILS_OBJ) $(PRIMO_OBJ) $(LDFLAGS)
+###############################################################################
+#COMANDOS                                                                     #
+###############################################################################
 
-# Regla para compilar utils.o
-$(UTILS_OBJ): $(UTILS_DIR)/utils.c $(UTILS_DIR)/utils.h
-	$(CC) $(CFLAGS) -c $(UTILS_DIR)/utils.c -o $(UTILS_OBJ)
+run_primo: $(PR)primo
+	./$(PR)primo
 
-# Regla para compilar primo.o
-$(PRIMO_OBJ): $(PRIMOS_DIR)/primo.c $(UTILS_DIR)/utils.h
-	$(CC) $(CFLAGS) -c $(PRIMOS_DIR)/primo.c -o $(PRIMO_OBJ)
+run_potenciacion: $(PO)potenciacion
+	./$(PO)potenciacion 224363654434574456 376453453466745325 26
 
-# Regla para limpiar los archivos compilados
+###############################################################################
+#EJECUTABLES                                                                  #
+###############################################################################
+$(PR)primo: $(O)primo.o $(O)utils.o
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+$(O)primo.o: $(PR)primo.c $(U)utils.h
+	mkdir -p $(O)
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+$(PO)potenciacion: $(O)potenciacion.o $(O)utils.o
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+$(O)potenciacion.o: $(PO)potenciacion.c $(U)utils.h
+	mkdir -p $(O)
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+$(O)utils.o: $(U)utils.c $(U)utils.h
+	mkdir -p $(O)
+	$(CC) -c $(CFLAGS) -o $@ $<
+
 clean:
-	rm -f $(TARGET) $(UTILS_OBJ) $(PRIMO_OBJ)
-
-# Regla para ejecutar el programa
-run: $(TARGET)
-	./$(TARGET) -b 1024 -p 0.9
+	rm -f $(O)*.o $(PR)primo $(PO)potenciacion

@@ -1,0 +1,8 @@
+# Ignore all files in the obj directory
+obj/
+
+# Ignore all executables
+primos/primo
+potenciacion/potenciacion
+
+
