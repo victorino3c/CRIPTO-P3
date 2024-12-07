@@ -17,8 +17,11 @@ all: $(PR)primo $(PO)potenciacion
 run_primo: $(PR)primo
 	./$(PR)primo
 
-run_potenciacion: $(PO)potenciacion
-	./$(PO)potenciacion 224363654434574456 376453453466745325 26
+run_potenciacion_test: $(PO)potenciacion
+	./$(PO)potenciacion test
+
+run_potenciacion_get: $(PO)potenciacion
+	./$(PO)potenciacion get 224363654434574456 376453453466745325 26
 
 ###############################################################################
 #EJECUTABLES                                                                  #
