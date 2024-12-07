@@ -6,6 +6,7 @@ U = utiles/
 O = obj/
 PR = primos/
 PO = potenciacion/
+D = data/
 
 # Rules
 all: $(PR)primo $(PO)potenciacion
@@ -45,4 +46,9 @@ $(O)utils.o: $(U)utils.c $(U)utils.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 clean:
-	rm -f $(O)*.o $(PR)primo $(PO)potenciacion
+	rm -f $(O)*.o $(PR)primo $(PO)potenciacion 
+	
+clean_data:
+	rm -f $(D)output.txt $(D)grafico_comparacion.png
+
+clean_all: clean clean_data
