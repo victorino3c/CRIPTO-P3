@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <jpeglib.h>
 #include <gmp.h>
+#include <mpfr.h>
 #include <time.h>
 #include <math.h>
 
@@ -370,5 +371,16 @@ uint64_t rand64();
 int bit_comparator_counter(uint32_t num1, uint32_t num2, int size);
 
 void bit_comparator_position(uint32_t num1, uint32_t num2, int *frequencies, int size);
+
+/**
+ * @brief Calculates the modular exponentiation of base^exp mod mod and stores the result in result
+ * 
+ * @param result result of the modular exponentiation
+ * @param base base of the exponentiation
+ * @param exp exponent of the exponentiation
+ * @param mod modulus of the exponentiation
+ */
+
+void potencia_modular(mpz_t result, const mpz_t base, const mpz_t exp, const mpz_t mod);
 
 #endif

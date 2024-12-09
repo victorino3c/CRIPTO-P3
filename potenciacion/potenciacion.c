@@ -19,17 +19,6 @@
 #define GNUPLOT_SCRIPT "potenciacion/grafica.gnu"
 
 /**
- * @brief Calculates the modular exponentiation of base^exp mod mod and stores the result in result
- * 
- * @param result result of the modular exponentiation
- * @param base base of the exponentiation
- * @param exp exponent of the exponentiation
- * @param mod modulus of the exponentiation
- */
-
-void potencia_modular(mpz_t result, const mpz_t base, const mpz_t exp, const mpz_t mod);
-
-/**
  * @brief Generates a random number with n bits
  * 
  * @param n number of bits of the number
@@ -89,37 +78,6 @@ int main(int argc, char *argv[]) {
     }
 
     return 0;
-}
-
-void potencia_modular(mpz_t result, const mpz_t base, const mpz_t exp, const mpz_t mod) {
-    mpz_t x;
-    mpz_init_set_ui(x, 1);  // x = 1
-
-    mpz_t base_mod;
-    mpz_init_set(base_mod, base);  // base_mod = base
-
-    mpz_t exp_copy;
-    mpz_init_set(exp_copy, exp);  // exp_copy = exp
-
-    while (mpz_cmp_ui(exp_copy, 0) > 0) {
-        // Si el bit menos significativo de exp es 1
-        if (mpz_odd_p(exp_copy)) {
-            mpz_mul(x, x, base_mod);
-            mpz_mod(x, x, mod);
-        }
-        // base_mod = (base_mod * base_mod) % mod
-        mpz_mul(base_mod, base_mod, base_mod);
-        mpz_mod(base_mod, base_mod, mod);
-
-        // exp_copy = exp_copy / 2
-        mpz_fdiv_q_2exp(exp_copy, exp_copy, 1);
-    }
-
-    mpz_set(result, x);
-
-    mpz_clear(x);
-    mpz_clear(base_mod);
-    mpz_clear(exp_copy);
 }
 
 mpz_t *generate_nbit_number(int n) {

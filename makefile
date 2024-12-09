@@ -16,7 +16,7 @@ all: $(PR)primo $(PO)potenciacion
 ###############################################################################
 
 run_primo: $(PR)primo
-	./$(PR)primo
+	./$(PR)primo -b 1024 -p 0.9999
 
 run_potenciacion_test: $(PO)potenciacion
 	./$(PO)potenciacion test
