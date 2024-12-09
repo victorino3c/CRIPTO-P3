@@ -18,7 +18,7 @@
  * @param prob probability of the number being prime
  * @param prime pointer to the prime number
  */
-void generate_prime_number(int size, mpf_t prob, mpz_t *prime);
+void generate_prime_number(int size, double prob, mpz_t *prime);
 
 /**
  * @brief Test if a number is prime using the Miller-Rabin test
@@ -36,7 +36,7 @@ int test_miller_rabin(mpz_t number, int rounds);
  * @param prob probability of the number being prime
  * @return int number of rounds
  */
-int calculate_rounds(int size, mpf_t prob);
+int calculate_rounds(int size, double prob);
 
 /**
  * @brief generates a random testigue a for the Miller-Rabin test
@@ -61,13 +61,12 @@ int check_args(int argc, char *argv[], int *size, char **prob);
 int main(int argc, char *argv[])
 {
 
-    int size=1024;
-    mpf_t prob;
+    int size;
     mpz_t prime;
+    double prob;
     char *p;
 
     mpz_init(prime);
-    mpf_init2(prob, 256);
 
     srand(time(NULL));
 
@@ -80,7 +79,11 @@ int main(int argc, char *argv[])
     printf("Size: %d\n", size);
     printf("Probability: %s\n", p);
 
+    prob = strtod(p, NULL);
+
     clock_t start = clock();
+
+    //while(1) {
 
     generate_prime_number(size, prob, &prime);
 
@@ -91,16 +94,18 @@ int main(int argc, char *argv[])
     /* Check if prime is prime with gmp function */
     if(mpz_probab_prime_p(prime, 25) == 0) {
         printf("No es primo\n");
+        //break;
     } else {
         printf("Es primo\n");
     }
+    //}
 
     mpz_clear(prime);
 
     return 0;
 }
 
-void generate_prime_number(int size, mpf_t prob, mpz_t *prime)
+void generate_prime_number(int size, double prob, mpz_t *prime)
 {
     int found = 0;
     char *str;
@@ -155,12 +160,17 @@ int test_miller_rabin(mpz_t number, int rounds)
     mpz_t d;
     mpz_t a;
     mpz_t aux;
+    mpz_t number_minus_1;
     mpz_t two;
 
     mpz_init(d);
     mpz_init(a);
     mpz_init(aux);
     mpz_init(two);
+    mpz_init(number_minus_1);
+
+    mpz_set(number_minus_1, number);
+    mpz_sub_ui(number_minus_1, number_minus_1, 1);
 
     mpz_set_ui(two, 2);
 
@@ -173,42 +183,34 @@ int test_miller_rabin(mpz_t number, int rounds)
         s++;
     }
 
-    //gmp_printf("d: %Zd\n", d);
-    //gmp_printf("s: %d\n", s);
-
     /* Test if number is prime */
-
     for(int i=0; i<rounds; i++) {
         //printf("Round %d\n", i);
         /* Generate testigue a */
         generate_testigue(a, number);
-        //gmp_printf("a: %Zd\n", a);
+
+        gmp_printf("a: %Zd\n", a);
 
         /* Test if a^d mod number == 1  o -1*/
         potencia_modular(aux, a, d, number);
 
-        mpz_sub_ui(number, number, 1);
-        if(mpz_cmp_ui(aux, 1) == 0 || mpz_cmp(aux, number) == 0) {
-            mpz_add_ui(number, number, 1);
-            continue;
+        if(mpz_cmp_ui(aux, 1) == 0 || mpz_cmp(aux, number_minus_1) == 0) {
+            continue; // might be prime, continue with next round
         }
-        mpz_add_ui(number, number, 1);
 
         for(int ii=0; ii<s; ii++) {
             mpz_mul_ui(d, d, 2);
             potencia_modular(aux, a, d, number);
 
             if(mpz_cmp_ui(aux, 1) == 0) {
-                return -1;
+                return -1; // 100% composite
             }
 
-            mpz_sub_ui(number, number, 1);
-            if(mpz_cmp(aux, number) == 0) {
-                mpz_add_ui(number, number, 1);
+            if(mpz_cmp(aux, number_minus_1) == 0) {
                 break;
             }
-            mpz_add_ui(number, number, 1);
 
+            /* If last iteration, is composite */
             if(ii == s-1) {
                 return -1;
             }
@@ -219,26 +221,24 @@ int test_miller_rabin(mpz_t number, int rounds)
     return 1;
 }
 
-int calculate_rounds(int size, mpf_t prob) {
+int calculate_rounds(int size, double prob) {
 
-    /*mpfr_t result;
-    mpfr_t aux;
-    mpfr_t probabbility;
+    double estimated_prob = 0;
+    int rounds = 0;
 
-    mpfr_init(result);
-    mpfr_init(aux);
-    mpfr_init(probabbility);
+    while(prob > estimated_prob) {
+        rounds++;
+        
+        estimated_prob = 1 / (1 + pow(4, rounds) / size * log(2));
+        estimated_prob = 1 - estimated_prob;
 
-    mpfr_set(probabbility, prob, MPFR_RNDN);
+        //printf("Estimated prob: %.75lf\n", estimated_prob);
 
-    mpfr_set(result, prob, MPFR_RNDN);
+    }
 
+    //printf("Rounds: %d\n", rounds);
+    return rounds;
 
-    return (int) result_d;*/
-    mpf_add_ui(prob, prob, 1);
-    mpf_sub_ui(prob, prob, 1);
-
-    return size*0 + 2;
 }
 
 void generate_testigue(mpz_t a, mpz_t number) {
@@ -258,6 +258,7 @@ void generate_testigue(mpz_t a, mpz_t number) {
 
     mpz_clear(aux);
     gmp_randclear(state);
+
 }
 
 int check_args(int argc, char *argv[], int *size, char **prob)
