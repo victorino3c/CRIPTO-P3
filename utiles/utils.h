@@ -21,7 +21,6 @@
 #include <sys/types.h>
 #include <jpeglib.h>
 #include <gmp.h>
-#include <mpfr.h>
 #include <time.h>
 #include <math.h>
 
