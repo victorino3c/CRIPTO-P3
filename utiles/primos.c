@@ -1,3 +1,9 @@
+/**
+ * Generates the first 2000 prime numbers
+ * To compile: gcc -o firts200primes primos.c -lm
+ */
+
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <math.h>
