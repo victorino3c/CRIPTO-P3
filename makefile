@@ -15,8 +15,14 @@ all: $(PR)primo $(PO)potenciacion
 #COMANDOS                                                                     #
 ###############################################################################
 
+run_primo_script: $(PR)primo
+	bash $(PR)primo.sh
+
+run_primo_graphic: $(PR)primo
+	python3.11 $(PR)graphic_primo.py
+
 run_primo: $(PR)primo
-	./$(PR)primo -b 32 -p 0.0000001
+	./$(PR)primo -b 1024 -p 0.999999 -i 1 -o $(D)output.txt	
 
 run_potenciacion_test: $(PO)potenciacion
 	./$(PO)potenciacion test

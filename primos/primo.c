@@ -15,36 +15,45 @@
  * @brief Generate a prime number of a given size
  * 
  * @param size size of the prime number
- * @param prob probability of the number being prime
+ * @param rounds number of rounds for the Miller-Rabin test
  * @param prime pointer to the prime number
  */
-void generate_prime_number(int size, double prob, mpz_t *prime);
+void generate_prime_number(int size, int rounds, mpz_t *prime);
 
 /**
  * @brief Test if a number is prime using the Miller-Rabin test
  * 
  * @param number number to test
  * @param rounds number of rounds
- * @return int 1 if the number is prime, 0 otherwise
+ * @return int 1 if the number is potentially prime, 0 otherwise
  */
 int test_miller_rabin(mpz_t number, int rounds);
 
 /**
- * @brief Calculate the number of rounds for the Miller-Rabin test
+ * @brief Calculate the number of rounds for the Miller-Rabin test for a given size and probability
  * 
  * @param size size of the prime number
- * @param prob probability of the number being prime
+ * @param prob theorical probability of the number being prime
  * @return int number of rounds
  */
 int calculate_rounds(int size, double prob);
 
 /**
- * @brief generates a random testigue a for the Miller-Rabin test
+ * @brief generates a random testigue a for the Miller-Rabin test. We opt for a random number between [2, number-1]
  * 
  * @param a testigue (return)
  * @param number number to test primality
  */
 void generate_testigue(mpz_t a, mpz_t number);
+
+/**
+ * @brief Check if a number is divisible by the first 2000 prime numbers
+ * 
+ * @param number number to check
+ * 
+ * @return int 0 if the number is divisible by one of the first 2000 prime numbers, -1 otherwise
+ */
+int check_divisibility_first_primes(mpz_t number);
 
 /**
  * @brief Check the arguments of the program
@@ -53,65 +62,81 @@ void generate_testigue(mpz_t a, mpz_t number);
  * @param argv arguments
  * @param size size of the prime number
  * @param prob probability of the number being prime
+ * @param iterations number of primes to generate
+ * @param file_out output file to print results
  * @return int 0 if the arguments are correct, -1 otherwise
  */
-int check_args(int argc, char *argv[], int *size, char **prob);
+int check_args(int argc, char *argv[], int *size, double *prob, int *iterations, char **file_out);
 
+/**
+ * @brief Print the help of the program
+ * 
+ */
+void print_help();
 
 int main(int argc, char *argv[])
 {
 
     int size;
     mpz_t prime;
-    double prob;
-    char *p;
+    double prob, acumulative_time=0;
+    int iterations = 0;
+    char *file_out = NULL;
 
     mpz_init(prime);
 
     srand(time(NULL));
 
-    if (check_args(argc, argv, &size, &p)){
+    if (check_args(argc, argv, &size, &prob, &iterations, &file_out) == -1){
         printf("Error in the arguments\n");
-        printf("Usage: %s -b <size> -p <probability>\n", argv[0]);
         return -1;
     }
 
-    printf("Size: %d\n", size);
-    printf("Probability: %s\n", p);
-
-    prob = strtod(p, NULL);
-
-    clock_t start = clock();
-
-    //while(1) {
-
-    generate_prime_number(size, prob, &prime);
-
-    clock_t end = clock();
-
-    gmp_printf("Prime number: %Zd\nObtained in %lf seconds\n", prime, (double)(end - start) / CLOCKS_PER_SEC);
-
-    /* Check if prime is prime with gmp function */
-    if(mpz_probab_prime_p(prime, 25) == 0) {
-        printf("No es primo\n");
-        //break;
-    } else {
-        printf("Es primo\n");
+    if(file_out != NULL) {
+        freopen(file_out, "w", stdout);
     }
-    //}
+
+    int rounds = 0;
+    rounds = calculate_rounds(size, prob);
+
+    for(int i=0; i<iterations; i++) {
+        clock_t start = clock();
+
+        generate_prime_number(size, rounds, &prime);
+
+        clock_t end = clock();
+
+        gmp_printf("Prime number Candidate: %Zd\nResult of our test: Is prime.\nResult of GMP test: ", prime);
+
+        /* Check if prime is prime with gmp function */
+        if(mpz_probab_prime_p(prime, 25) == 0) {
+            printf("Not prime.\n");
+
+        } else {
+            printf("Is prime.\n");
+        }
+
+        printf("Theorical probability of being prime: %lf (Number of rounds: %d)\n", prob, rounds);
+
+        printf("Time: %lf\n\n", (double)(end - start) / CLOCKS_PER_SEC);
+
+        acumulative_time += (double)(end - start) / CLOCKS_PER_SEC;
+
+    }
+
+    printf("Average time: %lf\n", acumulative_time/iterations);
 
     mpz_clear(prime);
 
     return 0;
 }
 
-void generate_prime_number(int size, double prob, mpz_t *prime)
+void generate_prime_number(int size, int rounds, mpz_t *prime)
 {
     int found = 0;
     char *str;
     
     mpz_t number;
-
     mpz_init(number);
 
     /* Create random number */
@@ -125,24 +150,19 @@ void generate_prime_number(int size, double prob, mpz_t *prime)
     str[size] = '\0';
     mpz_set_str(number, str, 2);
 
-    gmp_printf("Prime number: %Zd\n", number);
-
-    int rounds = 0;
-    rounds = calculate_rounds(size, prob);
-    printf("Number of rounds: %d\n", rounds);
-
+    /* Loop until find the prime number */
     while (!found)
     {
-        printf("Testing number: ");
-        gmp_printf("%Zd\n", number);
+        if(check_divisibility_first_primes(number) == 0) {
+            mpz_add_ui(number, number, 2);
+        }
 
-        if (test_miller_rabin(number, rounds) > 0)
+        else if (test_miller_rabin(number, rounds) > 0)
         {
             found = 1;
         }
         else
         {
-            printf("Not prime\n");
             mpz_add_ui(number, number, 2);
         }
     }
@@ -156,7 +176,6 @@ void generate_prime_number(int size, double prob, mpz_t *prime)
 int test_miller_rabin(mpz_t number, int rounds)
 {
 
-    /* Discompose number in 2^n*d + 1 */
     mpz_t d;
     mpz_t a;
     mpz_t aux;
@@ -169,11 +188,10 @@ int test_miller_rabin(mpz_t number, int rounds)
     mpz_init(two);
     mpz_init(number_minus_1);
 
+    /* Discompose number in 2^n*d + 1 */
     mpz_set(number_minus_1, number);
     mpz_sub_ui(number_minus_1, number_minus_1, 1);
-
     mpz_set_ui(two, 2);
-
     mpz_sub_ui(d, number, 1);
 
     int s = 0;
@@ -185,44 +203,58 @@ int test_miller_rabin(mpz_t number, int rounds)
 
     /* Test if number is prime */
     for(int i=0; i<rounds; i++) {
-        //printf("Round %d\n", i);
-        /* Generate testigue a */
-        generate_testigue(a, number);
+        generate_testigue(a, number); // Generate random testigue
 
-        gmp_printf("a: %Zd\n", a);
-
-        /* Test if a^d mod number == 1  o -1*/
+        /* Test if a^d mod number == 1  or -1*/
         potencia_modular(aux, a, d, number);
-
         if(mpz_cmp_ui(aux, 1) == 0 || mpz_cmp(aux, number_minus_1) == 0) {
             continue; // might be prime, continue with next round
         }
 
+        /* For every 2^d*s */
         for(int ii=0; ii<s; ii++) {
             mpz_mul_ui(d, d, 2);
             potencia_modular(aux, a, d, number);
 
             if(mpz_cmp_ui(aux, 1) == 0) {
+                mpz_clear(d);
+                mpz_clear(a);
+                mpz_clear(aux);
+                mpz_clear(two);
+                mpz_clear(number_minus_1);
                 return -1; // 100% composite
             }
 
             if(mpz_cmp(aux, number_minus_1) == 0) {
-                break;
+                break; // don't answer, might be prime. Continue with next round
             }
 
-            /* If last iteration, is composite */
+            /* If last iteration, and algorithm didn't answer yet, is composite */
             if(ii == s-1) {
+                mpz_clear(d);
+                mpz_clear(a);
+                mpz_clear(aux);
+                mpz_clear(two);
+                mpz_clear(number_minus_1);
                 return -1;
             }
         }
-        
     }
 
+    mpz_clear(d);
+    mpz_clear(a);
+    mpz_clear(aux);
+    mpz_clear(two);
+    mpz_clear(number_minus_1);
     return 1;
 }
 
 int calculate_rounds(int size, double prob) {
 
+    /* The method is this weird cause we can calculate the probability 
+    given the number of rounds, but not the other way around. 
+    Works well with double precision (maximum 31 rounds) */
+    
     double estimated_prob = 0;
     int rounds = 0;
 
@@ -231,17 +263,16 @@ int calculate_rounds(int size, double prob) {
         
         estimated_prob = 1 / (1 + pow(4, rounds) / size * log(2));
         estimated_prob = 1 - estimated_prob;
-
-        //printf("Estimated prob: %.75lf\n", estimated_prob);
-
     }
 
-    //printf("Rounds: %d\n", rounds);
     return rounds;
 
 }
 
 void generate_testigue(mpz_t a, mpz_t number) {
+   
+    /* Random a testigue method */
+    
     mpz_t aux;
     gmp_randstate_t state;
     gmp_randinit_default(state);
@@ -261,14 +292,32 @@ void generate_testigue(mpz_t a, mpz_t number) {
 
 }
 
-int check_args(int argc, char *argv[], int *size, char **prob)
+int check_divisibility_first_primes(mpz_t number){
+
+    for(int i=0; i<2000; i++) {
+        if(mpz_divisible_ui_p(number, primes_table[i])) {
+            return 0;
+        }
+    }
+
+    return -1;
+}
+
+int check_args(int argc, char *argv[], int *size, double *prob, int *iterations, char **file_out)
 {
-    if (argc != 5)
+    if (argc != 7 && argc != 9){
+        print_help();
         return -1;
+    }
 
     if (strcmp(argv[1], "-b") == 0)
     {
         *size = atoi(argv[2]);
+        if(*size < 0) {
+            printf("Size must be greater than 0\n");
+            print_help();
+            return -1;
+        }
     }
     else
     {
@@ -277,12 +326,48 @@ int check_args(int argc, char *argv[], int *size, char **prob)
 
     if (strcmp(argv[3], "-p") == 0)
     {
-        *prob = argv[4];
+        *prob = strtod(argv[4], NULL);
+        if(*prob < 0 || *prob > 1) {
+            printf("Probability must be between 0 and 1\n");
+            print_help();
+            return -1;
+        }
     }
     else
     {
         return -1;
     }
 
+    if (strcmp(argv[5], "-i") == 0)
+    {
+        *iterations = atoi(argv[6]);
+        if(*iterations < 0) {
+            printf("Iterations must be greater than 0\n");
+            print_help();
+            return -1;
+        }
+    }
+    else
+    {
+        print_help();
+        return -1;
+    }
+
+    if(argc == 9) {
+        if (strcmp(argv[7], "-o") == 0)
+        {
+            *file_out = argv[8];
+        }
+        else
+        {
+            print_help();
+            return -1;
+        }
+    }
+
     return 0;
+}
+
+void print_help() {
+    printf("Usage: primo -b <size> -p <probability> -i <iterations> [-o <file_name>]\n");
 }
