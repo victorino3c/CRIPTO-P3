@@ -7,7 +7,7 @@ O = obj/
 PR = primos/
 PO = potenciacion/
 D = data/
-V = vegas/
+V = rsa/
 
 # Rules
 all: $(PR)prime_generator $(PO)potenciacion $(V)vegas
@@ -16,8 +16,14 @@ all: $(PR)prime_generator $(PO)potenciacion $(V)vegas
 #COMANDOS                                                                     #
 ###############################################################################
 
+run_vegas_script: $(V)vegas
+	bash $(V)vegas.sh
+
+run_vegas_graphic: $(V)vegas
+	python3.11 $(V)graphic_vegas.py
+
 run_vegas: $(V)vegas
-	./$(V)vegas
+	./$(V)vegas -s 8192 -o $(D)output.txt
 
 run_primo_script: $(PR)primo
 	bash $(PR)primo.sh
@@ -37,10 +43,10 @@ run_potenciacion_get: $(PO)potenciacion
 ###############################################################################
 #EJECUTABLES                                                                  #
 ###############################################################################
-$(V)vegas: $(O)vegas.o $(O)primo.o $(O)utils.o
+$(V)vegas: $(O)vegas.o $(O)rsa.o $(O)primo.o $(O)utils.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-$(O)vegas.o: $(V)vegas.c $(PR)primo.h $(U)utils.h
+$(O)vegas.o: $(V)vegas.c $(V)rsa.h $(PR)primo.h $(U)utils.h
 	mkdir -p $(O)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
@@ -55,6 +61,10 @@ $(PO)potenciacion: $(O)potenciacion.o $(O)utils.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 $(O)potenciacion.o: $(PO)potenciacion.c $(U)utils.h
+	mkdir -p $(O)
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+$(O)rsa.o: $(V)rsa.c $(PR)primo.h $(U)utils.h
 	mkdir -p $(O)
 	$(CC) -c $(CFLAGS) -o $@ $<
 

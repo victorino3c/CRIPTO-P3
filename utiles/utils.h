@@ -333,6 +333,15 @@ char *addFilling(int n, char *texto);
 mpz_t *euclides(mpz_t a, mpz_t b, int *z);
 
 /**
+ * @brief Returns the MCD of a and b using the Euclides algorithm.
+ * 
+ * @param a
+ * @param b 
+ * @param result (return) MCD of a and b
+ */
+void euclides_mcd(mpz_t a, mpz_t b, mpz_t result);
+
+/**
  * @brief Calculates the inverse of a in modul mod.
  *
  * @param a
@@ -342,6 +351,17 @@ mpz_t *euclides(mpz_t a, mpz_t b, int *z);
  *         returns null if a and mod are not coprimes.
  */
 mpz_t *extended_euclides(mpz_t a, mpz_t mod, int *tam);
+
+/**
+ * @brief Calculates the inverse of a in modul mod.
+ *
+ * @param a
+ * @param mod
+ * @param result (return) inverse of a in modul mod
+ * 
+ * @return 1 if a and mod are coprimes, 0 in other case
+ */
+int extended_euclides_inverse(mpz_t a, mpz_t mod, mpz_t result);
 
 /**
  * @brief Checks if 2 given numbers are coprimes. It also saves the quotients of the division.

@@ -5,15 +5,14 @@
 mkdir -p data
 
 # Table with the sizes of the prime numbers to generate
-initial_size=8
-final_size=2048
-number_muestras=20
+initial_size=64
+final_size=4096
+number_muestras=50
 step_size=$((($final_size - $initial_size)/$number_muestras))
 
-iterations=1
-probabilidad=0.999
+iterations=20
 
-file="data/primos.txt"
+file="data/vegas.txt"
 output="data/output.txt"
 
 # Remove the file if it already exists
@@ -23,9 +22,14 @@ rm -f $file
 for ((i=$initial_size; i<=$final_size; i+=$step_size))
 do
     echo "Generating prime numbers with size $i"
-    ./primos/primo -b $i -p $probabilidad -i $iterations -o $output
-
-    # Last line of output will be: "Average time: X", take that time and store it in the file
-    time=$(tail -n 1 $output | cut -d ' ' -f 3)
-    echo "$i $time" >> $file
+    total_time=0
+    for ((j=0; j<$iterations; j++))
+    do
+        ./rsa/vegas -s $i -o $output
+        # Last line of output will be: "Time: X", take that time and store it in the file
+        new_time=$(tail -n 1 $output | cut -d ' ' -f 2)
+        total_time=$(echo "$total_time + $new_time" | bc)
+    done
+    avg_time=$(echo "scale=6; $total_time / $iterations" | bc)
+    echo "$i $avg_time" >> $file
 done

@@ -162,12 +162,28 @@ mpz_t *euclides(mpz_t a, mpz_t b, int * z) {
 
 }
 
+/*Function to get the greatest common divisor*/
+void euclides_mcd(mpz_t a, mpz_t b, mpz_t result) {
+    int z;
+    mpz_t *lista = euclides(a, b, &z);
+    mpz_set(result, lista[z - 1]);
+    for (int i = 0; i < z; i++) {
+        mpz_clear(lista[i]);
+    }
+    free(lista);
+}
+
 /*Euclides extended algorithm with gmp*/
 mpz_t *extended_euclides(mpz_t a, mpz_t mod, int *tam) {
     int i, z;
     
     mpz_t aux;
     mpz_t *u,*v;
+
+    if(mpz_cmp(a, mod) > 0) {
+        printf("Error, a no debe ser mayor que mod\n");
+        return NULL;
+    }
 
     mpz_t *lista = euclides(a, mod, &z);
     if (mpz_cmp_ui(lista[z - 1], 1) != 0) {
@@ -224,13 +240,33 @@ mpz_t *extended_euclides(mpz_t a, mpz_t mod, int *tam) {
     }
     free(lista);
     
-    // Que se hace con u ??? PREGUNTAR AL PROFE
+    // Con u no hacemos nada
     for(i=0; i<z; i++) {
         mpz_clear(u[i]);
     }
     free(u);
 
     return v;
+}
+
+/* Function to get the inverse of a number in mod mod*/
+int extended_euclides_inverse(mpz_t a, mpz_t mod, mpz_t result) {
+    int z;
+    mpz_t *lista = extended_euclides(a, mod, &z);
+    if(lista == NULL) {
+        return -1;
+    }
+    mpz_set(result, lista[z - 1]);
+    for (int i = 0; i < z; i++) {
+        mpz_clear(lista[i]);
+    }
+    free(lista);
+
+    if(mpz_cmp_ui(result, 0) < 0) {
+        mpz_add(result, result, mod);
+    }
+
+    return 0;
 }
 
 /*Euclides algorithm with ints*/
