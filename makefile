@@ -7,13 +7,17 @@ O = obj/
 PR = primos/
 PO = potenciacion/
 D = data/
+V = vegas/
 
 # Rules
-all: $(PR)primo $(PO)potenciacion
+all: $(PR)prime_generator $(PO)potenciacion $(V)vegas
 
 ###############################################################################
 #COMANDOS                                                                     #
 ###############################################################################
+
+run_vegas: $(V)vegas
+	./$(V)vegas
 
 run_primo_script: $(PR)primo
 	bash $(PR)primo.sh
@@ -21,8 +25,8 @@ run_primo_script: $(PR)primo
 run_primo_graphic: $(PR)primo
 	python3.11 $(PR)graphic_primo.py
 
-run_primo: $(PR)primo
-	./$(PR)primo -b 1024 -p 0.999999 -i 1 -o $(D)output.txt	
+run_primo: $(PR)prime_generator
+	./$(PR)prime_generator -b 1024 -p 0.999999 -i 1 -o $(D)output.txt	
 
 run_potenciacion_test: $(PO)potenciacion
 	./$(PO)potenciacion test
@@ -33,10 +37,17 @@ run_potenciacion_get: $(PO)potenciacion
 ###############################################################################
 #EJECUTABLES                                                                  #
 ###############################################################################
-$(PR)primo: $(O)primo.o $(O)utils.o
+$(V)vegas: $(O)vegas.o $(O)primo.o $(O)utils.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-$(O)primo.o: $(PR)primo.c $(U)utils.h
+$(O)vegas.o: $(V)vegas.c $(PR)primo.h $(U)utils.h
+	mkdir -p $(O)
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+$(PR)prime_generator: $(O)prime_generator.o $(O)primo.o $(O)utils.o
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+$(O)prime_generator.o: $(PR)prime_generator.c $(PR)primo.h $(U)utils.h
 	mkdir -p $(O)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
@@ -47,12 +58,16 @@ $(O)potenciacion.o: $(PO)potenciacion.c $(U)utils.h
 	mkdir -p $(O)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
+$(O)primo.o: $(PR)primo.c $(PR)primo.h
+	mkdir -p $(O)
+	$(CC) -c $(CFLAGS) -o $@ $<
+
 $(O)utils.o: $(U)utils.c $(U)utils.h
 	mkdir -p $(O)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 clean:
-	rm -f $(O)*.o $(PR)primo $(PO)potenciacion 
+	rm -f $(O)*.o $(PR)prime_generator $(PO)potenciacion  $(V)vegas
 	
 clean_data:
 	rm -f $(D)output.txt $(D)grafico_comparacion.png
