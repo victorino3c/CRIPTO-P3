@@ -11,7 +11,7 @@
 
 #include "primo.h"
 
-void generate_prime_number(int size, int rounds, mpz_t *prime)
+void generate_prime_number(int size, int rounds, mpz_t prime)
 {
     int found = 0;
     char *str;
@@ -49,7 +49,7 @@ void generate_prime_number(int size, int rounds, mpz_t *prime)
 
     free(str);
 
-    mpz_init_set(*prime, number);
+    mpz_set(prime, number);
     mpz_clear(number);
 }
 
@@ -174,7 +174,7 @@ void generate_testigue(mpz_t a, mpz_t number) {
 
 int check_divisibility_first_primes(mpz_t number){
 
-    for(int i=0; i<2000; i++) {
+    for(int i=0; i<PRIME_LIST_SIZE; i++) {
         if(mpz_divisible_ui_p(number, primes_table[i])) {
             return 0;
         }

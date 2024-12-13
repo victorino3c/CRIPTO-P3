@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
     printf("Generating p...\n");
     generate_prime_number(size, 15, &p);
     printf("Generating q...\n");
-    generate_prime_number(size-1, 15, &q);
+    generate_prime_number(size-1, 15, &q); // q has one less bit than p to make sure they are different numbers
     mpz_mul(n, p, q);
     /* Generates Euler function value*/
     generate_euler_f(p, q, euler_f);
@@ -113,6 +113,9 @@ int main(int argc, char *argv[]) {
     mpz_clear(euler_f);
     mpz_clear(e);
     mpz_clear(d);
+    mpz_clear(n);
+    mpz_clear(guess_p);
+    mpz_clear(guess_q);
 
     return 0;
 }
@@ -204,6 +207,16 @@ void vegas_attack(mpz_t d, mpz_t n, mpz_t mod, mpz_t p, mpz_t q) {
     }
 
     mpz_div(q, n, p);
+
+    mpz_clear(e);
+    mpz_clear(ed);
+    mpz_clear(n_1);
+    mpz_clear(two);
+    mpz_clear(m);
+    mpz_clear(aux);
+    mpz_clear(pre_aux);
+    mpz_clear(w);
+    mpz_clear(mod_p);
 
     return;
 }

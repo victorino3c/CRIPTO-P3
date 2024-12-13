@@ -23,7 +23,7 @@ run_vegas_graphic: $(V)vegas
 	python3.11 $(V)graphic_vegas.py
 
 run_vegas: $(V)vegas
-	./$(V)vegas -s 8192 -o $(D)output.txt
+	./$(V)vegas -s 1024 -o $(D)output.txt
 
 run_primo_script: $(PR)primo
 	bash $(PR)primo.sh
@@ -32,13 +32,13 @@ run_primo_graphic: $(PR)primo
 	python3.11 $(PR)graphic_primo.py
 
 run_primo: $(PR)prime_generator
-	./$(PR)prime_generator -b 1024 -p 0.999999 -i 1 -o $(D)output.txt	
+	./$(PR)prime_generator -b 1024 -p 0.999 -i 5 -o $(D)output.txt	
 
 run_potenciacion_test: $(PO)potenciacion
 	./$(PO)potenciacion test
 
 run_potenciacion_get: $(PO)potenciacion
-	./$(PO)potenciacion get 224363654434574456 376453453466745325 26
+	./$(PO)potenciacion get 2243636544312312314574456 3764534534667432424245325 2613879263648716873416871
 
 ###############################################################################
 #EJECUTABLES                                                                  #

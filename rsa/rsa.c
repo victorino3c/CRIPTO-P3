@@ -25,9 +25,10 @@ void generate_euler_f(mpz_t p, mpz_t q, mpz_t euler_f){
 
 void generate_e(mpz_t euler_f, mpz_t e) {
 
-    mpz_t *array;
-    int size;
+    mpz_t aux;
     int loop = 0;
+
+    mpz_init(aux);
 
     while(loop == 0) {
         /* We use the testigue function from primo.h 
@@ -35,15 +36,13 @@ void generate_e(mpz_t euler_f, mpz_t e) {
         generate_testigue(e, euler_f);
 
         /* Check if e is coprime with euler_f */
-        array = euclides(e, euler_f, &size);
-        if(mpz_cmp_ui(array[size-1], 1) == 0) {
+        euclides_mcd(e, euler_f, aux);
+        if(mpz_cmp_ui(aux, 1) == 0) {
             loop = 1;
-            for(int i=0; i<size; i++) {
-                mpz_clear(array[i]);
-            }
-            free(array);
         }
     }
+
+    mpz_clear(aux);
     
 }
 

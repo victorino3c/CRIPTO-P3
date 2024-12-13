@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     for(int i=0; i<iterations; i++) {
         clock_t start = clock();
 
-        generate_prime_number(size, rounds, &prime);
+        generate_prime_number(size, rounds, prime);
 
         clock_t end = clock();
 

@@ -305,7 +305,7 @@ int * euclides2(int det, int m, int *z) {
 }
 
 /*Extended euclides algorithm with ints*/
-int *extended_euclides2(int det, int m, int n, int *tam) {
+int *extended_euclides2(int det, int m, int *tam) {
     int i, z;
     
     int *u,*v;
