@@ -66,9 +66,9 @@ int main(int argc, char *argv[]) {
     /* Starts RSA procedure */
     /* Generate primes p and q */
     printf("Generating p...\n");
-    generate_prime_number(size, 15, &p);
+    generate_prime_number(size, 15, p);
     printf("Generating q...\n");
-    generate_prime_number(size-1, 15, &q); // q has one less bit than p to make sure they are different numbers
+    generate_prime_number(size-1, 15, q); // q has one less bit than p to make sure they are different numbers
     mpz_mul(n, p, q);
     /* Generates Euler function value*/
     generate_euler_f(p, q, euler_f);
